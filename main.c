@@ -70,11 +70,45 @@ void directory_indexing(char *directory_list[], int directory_list_len){
 
 void print_directory_contents(struct directory_document* dir) {
     for(int i = 0; i < dir[0].count; i++) {
-        printf("File Name: %s, File Type: %s, File Count: %d\n", dir[i].file_name, dir[i].file_type, dir[i].count);
+        printf("File Name: %s, File Type: %s\n", dir[i].file_name, dir[i].file_type);
     }
+    return;
 }
 
-int file_binary_check(struct directory_document* dir, char* directory){
+int file_Signatures_check(unsigned char* buffer, long file_size){
+
+    char* signatures_array[2] = {"\x50\x4B\x03\x04\x14\x00\x06\x00", "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"};
+    int signature_array_value_len[2] = {8, 10};
+
+    int signatures_array_len = sizeof(signatures_array) / sizeof(signatures_array[0]);
+    
+    //printf("signatures_list_len: %d\n", signatures_array_len);
+
+    for (int i = 0; i < signatures_array_len; i++){
+
+        for (int j = 0; j <signature_array_value_len[i]; j++){
+            printf("signatures_test %d, %dth value: %02x\n",i, j,signatures_array[i][j]);
+            if(signatures_array[i][j] == buffer[j]){
+                printf("compare true\n");
+            }
+            else{
+                printf("compare False\n");
+                break;
+            }
+            if (j == signature_array_value_len[i]-1){
+                printf("this file is docx\n");
+                return 1;
+            }
+        }
+        printf("\n");
+    }
+    
+
+    printf("\n");
+    return 1;
+}
+
+void file_binary_check(struct directory_document* dir, char* directory){
     for(int i = 0; i < dir[0].count; i++){
         if(dir[i].file_type == "Directory"){
             continue;
@@ -111,18 +145,23 @@ int file_binary_check(struct directory_document* dir, char* directory){
             continue;
         }
 
-        // 출력
-        for (int j = 0; j < file_size; j++) {
-            printf("%02x ", buffer[j]);
-        }
-        printf("\n");
+        //출력
+        //for (int j = 0; j < file_size; j++) {
+        //    printf("%02x ", buffer[j]);
+        //}
 
-        // 메모리를 해제하고 파일을 닫습니다.
+        file_Signatures_check(buffer, file_size);
+
+        // 메모리 해제
         free(buffer);
         fclose(file);
+
         
     }
+    return;
 }
+
+
 
 
 int main(){

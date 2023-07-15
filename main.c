@@ -10,6 +10,7 @@
 struct directory_document{
     char *file_name;   // 파일명
     char *file_type;   // 파일인지, 디렉터리인지
+    char *file_signature; // 파일 시그니처값
     int count;         // 파일 및 디렉토리 수
 };
 
@@ -53,6 +54,7 @@ void directory_indexing(char *directory_list[], int directory_list_len){
 
                 (*target_dir)[file_count - 1].file_name = strdup(data.cFileName);
                 (*target_dir)[file_count - 1].file_type = (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? "Directory" : "File";
+                (*target_dir)[file_count - 1].file_signature = "unknown";
 
                 //printf("%s: %s\n", (*target_dir)[file_count - 1].file_type, (*target_dir)[file_count - 1].file_name);
             }
@@ -70,15 +72,16 @@ void directory_indexing(char *directory_list[], int directory_list_len){
 
 void print_directory_contents(struct directory_document* dir) {
     for(int i = 0; i < dir[0].count; i++) {
-        printf("File Name: %s, File Type: %s\n", dir[i].file_name, dir[i].file_type);
+        printf("File Name: %s, File Type: %s, File Signature: %s\n", dir[i].file_name, dir[i].file_type,dir[i].file_signature);
     }
     return;
 }
 
-int file_Signatures_check(unsigned char* buffer, long file_size){
+char* file_Signatures_check(unsigned char* buffer, long file_size){
 
-    char* signatures_array[2] = {"\x50\x4B\x03\x04\x14\x00\x06\x00", "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"};
-    int signature_array_value_len[2] = {8, 10};
+    char* signatures_array_alias[2] = {"png","docx"}; //구조체에 저장할 파일 시그니처 명
+    char* signatures_array[2] = {"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", "\x50\x4B\x03\x04\x14\x00\x06\x00"}; //실제 시그니처값
+    int signature_array_value_len[2] = {8, 8}; // 시그니처값의 길이
 
     int signatures_array_len = sizeof(signatures_array) / sizeof(signatures_array[0]);
     
@@ -87,17 +90,28 @@ int file_Signatures_check(unsigned char* buffer, long file_size){
     for (int i = 0; i < signatures_array_len; i++){
 
         for (int j = 0; j <signature_array_value_len[i]; j++){
-            printf("signatures_test %d, %dth value: %02x\n",i, j,signatures_array[i][j]);
+            //TODO: PNG find error check
+
+            printf("signatures_%d_array , %dth value: %02x\n",i, j,signatures_array[i][j]);
+            printf("file hex value: %02x\n",buffer[j]);
+            printf("j:%d\n",j);
+            printf("i:%d\n",i);
             if(signatures_array[i][j] == buffer[j]){
-                printf("compare true\n");
+                printf("is matching\n");
             }
             else{
-                printf("compare False\n");
+                printf("not matching\n");
+
                 break;
             }
+
+            //여기까지 왔다는건 모두 매칭되었다는 뜻
             if (j == signature_array_value_len[i]-1){
                 printf("this file is docx\n");
-                return 1;
+                printf("j:%d i-1:%d\n",j,signature_array_value_len[i]-1);
+
+                
+                return signatures_array_alias[i];
             }
         }
         printf("\n");
@@ -105,7 +119,7 @@ int file_Signatures_check(unsigned char* buffer, long file_size){
     
 
     printf("\n");
-    return 1;
+    return "unknown";
 }
 
 void file_binary_check(struct directory_document* dir, char* directory){
@@ -146,11 +160,13 @@ void file_binary_check(struct directory_document* dir, char* directory){
         }
 
         //출력
-        //for (int j = 0; j < file_size; j++) {
-        //    printf("%02x ", buffer[j]);
-        //}
+        for (int j = 0; j < file_size; j++) {
+           printf("%02x ", buffer[j]);
+        }
+        printf("\n");
 
-        file_Signatures_check(buffer, file_size);
+        // 구조체에 시그니처값 적용
+        dir[i].file_signature = file_Signatures_check(buffer, file_size);
 
         // 메모리 해제
         free(buffer);
@@ -204,6 +220,8 @@ int main(){
     결론: 구조체에 있는 파일을 하나씩 fread(binary로) 하고, 시그니처를 확인하여 암호화를 진행해야함.
     */
     file_binary_check(document_dir,"C:\\Users\\user\\Documents\\");
+    printf("\nnew Document Directory:\n");
+    print_directory_contents(document_dir);
 
     return 1;
 }

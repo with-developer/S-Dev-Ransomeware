@@ -80,7 +80,7 @@ void print_directory_contents(struct directory_document* dir) {
 char* file_Signatures_check(unsigned char* buffer, long file_size){
 
     char* signatures_array_alias[2] = {"png","docx"}; //구조체에 저장할 파일 시그니처 명
-    char* signatures_array[2] = {"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", "\x50\x4B\x03\x04\x14\x00\x06\x00"}; //실제 시그니처값
+    unsigned char* signatures_array[2] = {(unsigned char*)"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", (unsigned char*)"\x50\x4B\x03\x04\x14\x00\x06\x00"}; //실제 시그니처값
     int signature_array_value_len[2] = {8, 8}; // 시그니처값의 길이
 
     int signatures_array_len = sizeof(signatures_array) / sizeof(signatures_array[0]);
@@ -90,12 +90,10 @@ char* file_Signatures_check(unsigned char* buffer, long file_size){
     for (int i = 0; i < signatures_array_len; i++){
 
         for (int j = 0; j <signature_array_value_len[i]; j++){
-            //TODO: PNG find error check
-
-            printf("signatures_%d_array , %dth value: %02x\n",i, j,signatures_array[i][j]);
-            printf("file hex value: %02x\n",buffer[j]);
-            printf("j:%d\n",j);
-            printf("i:%d\n",i);
+            // printf("signatures_%d_array , %dth value: %02x\n",i, j,signatures_array[i][j]);
+            // printf("file hex value: %02x\n",buffer[j]);
+            // printf("j:%d\n",j);
+            // printf("i:%d\n",i);
             if(signatures_array[i][j] == buffer[j]){
                 printf("is matching\n");
             }
@@ -106,11 +104,7 @@ char* file_Signatures_check(unsigned char* buffer, long file_size){
             }
 
             //여기까지 왔다는건 모두 매칭되었다는 뜻
-            if (j == signature_array_value_len[i]-1){
-                printf("this file is docx\n");
-                printf("j:%d i-1:%d\n",j,signature_array_value_len[i]-1);
-
-                
+            if (j == signature_array_value_len[i]-1){                
                 return signatures_array_alias[i];
             }
         }
@@ -160,10 +154,10 @@ void file_binary_check(struct directory_document* dir, char* directory){
         }
 
         //출력
-        for (int j = 0; j < file_size; j++) {
-           printf("%02x ", buffer[j]);
-        }
-        printf("\n");
+        // for (int j = 0; j < file_size; j++) {
+        //    printf("%02x ", buffer[j]);
+        // }
+        // printf("\n");
 
         // 구조체에 시그니처값 적용
         dir[i].file_signature = file_Signatures_check(buffer, file_size);

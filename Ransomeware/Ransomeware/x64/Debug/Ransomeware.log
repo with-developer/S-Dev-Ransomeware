@@ -1,0 +1,4 @@
+﻿  Ransomeware.c
+C:\Users\user\Desktop\project\s-dev-ransomeware\Ransomeware\Ransomeware\Ransomeware.c(236,5): warning C4013: 'unzip'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
+Ransomeware.obj : error LNK2019: unzipmain 함수에서 참조되는 확인할 수 없는 외부 기호
+C:\Users\user\Desktop\project\s-dev-ransomeware\Ransomeware\x64\Debug\Ransomeware.exe : fatal error LNK1120: 1개의 확인할 수 없는 외부 참조입니다.

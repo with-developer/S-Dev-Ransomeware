@@ -4,8 +4,21 @@
 #include <string.h>
 #include <stdlib.h>
 #include <windows.h>
+#include "minizip/zip.h"
+
+#include <sys/stat.h>
+#include <direct.h>
 
 #define MAX_LEN 512
+
+void create_directory(const char* dir) {
+#ifdef _WIN32
+    _mkdir(dir);
+#else
+    mkdir(dir, 0777);
+#endif
+}
+
 
 // 경로별 구조체 생성
 struct directory_document {
@@ -176,6 +189,7 @@ void file_binary_check(struct directory_document* dir, char* directory) {
 
 
 
+
 int main() {
     char* directory_list[4] = { "C:\\Users\\user\\Documents\\*", "C:\\Users\\user\\Desktop\\*", "C:\\Users\\user\\Downloads\\*", "" };
 
@@ -212,6 +226,15 @@ int main() {
     file_binary_check(document_dir, "C:\\Users\\user\\Documents\\");
     printf("\nnew Document Directory:\n");
     print_directory_contents(document_dir);
+
+    
+    //TODO: docx 파일 압축해제
+    const char* docx_filename = "C:\\Users\\user\\Documents\\example2.docx";
+    const char* dest_dir = "C:\\Users\\user\\Documents\\output\\";
+
+
+    unzip(docx_filename, dest_dir);
+
 
 
 

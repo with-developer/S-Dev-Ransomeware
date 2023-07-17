@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <windows.h>
-#include "minizip/zip.h"
+#include "minizip/unzip.h"
 
 #include <sys/stat.h>
 #include <direct.h>
@@ -229,11 +229,101 @@ int main() {
 
     
     //TODO: docx 파일 압축해제
-    const char* docx_filename = "C:\\Users\\user\\Documents\\example2.docx";
+    const char* docx_filename = "C:\\Users\\user\\Documents\\example6.zip";
     const char* dest_dir = "C:\\Users\\user\\Documents\\output\\";
 
+    unzFile zip_file = unzOpen(docx_filename);
+    if (!zip_file) {
+        printf("Failed to open the DOCX file.\n");
+        return -1;
+    }
 
-    unzip(docx_filename, dest_dir);
+    create_directory(dest_dir);
+
+    int ret = unzGoToFirstFile(zip_file);
+    while (ret == UNZ_OK) {
+        char filename[256];
+        unz_file_info file_info;
+
+        ret = unzGetCurrentFileInfo(zip_file, &file_info, filename, sizeof(filename), NULL, 0, NULL, 0);
+        if (ret != UNZ_OK) {
+            printf("Failed to get file information from the DOCX archive.\n");
+            unzClose(zip_file);
+            return -1;
+        }
+
+        char dest_file_path[256];
+        printf("filename: %s\n", filename);
+        snprintf(dest_file_path, sizeof(dest_file_path), "%s%s", dest_dir, filename);
+
+
+        if (filename[strlen(filename) - 1] == '/') {
+
+            create_directory(dest_file_path);
+        }
+        else {
+
+            char* slash_position = strchr(filename, '/');
+            if (slash_position != NULL) {
+                char* directory_start = filename;
+                char* directory_end;
+                while ((directory_end = strchr(directory_start, '/')) != NULL) {
+                    *directory_end = '\0';
+
+                    snprintf(dest_file_path, sizeof(dest_file_path), "%s%s", dest_dir, filename);
+                    create_directory(dest_file_path);
+
+
+                    *directory_end = '/';
+
+                    directory_start = directory_end + 1;
+                }
+
+                snprintf(dest_file_path, sizeof(dest_file_path), "%s%s", dest_file_path, slash_position + 1);
+            }
+
+            FILE* dest_file = fopen(dest_file_path, "wb");
+            if (!dest_file) {
+                printf("Failed to open destination file for writing.\n");
+                unzClose(zip_file);
+                return -1;
+            }
+
+            ret = unzOpenCurrentFile(zip_file);
+            if (ret != UNZ_OK) {
+                printf("Failed to open current file in the DOCX archive.\n");
+                fclose(dest_file);
+                unzClose(zip_file);
+                return -1;
+            }
+
+            unsigned char buffer[4096];
+            int read_size;
+            do {
+                read_size = unzReadCurrentFile(zip_file, buffer, sizeof(buffer));
+                if (read_size < 0) {
+                    printf("Failed to read file data from the DOCX archive.\n");
+                    fclose(dest_file);
+                    unzCloseCurrentFile(zip_file);
+                    unzClose(zip_file);
+                    return -1;
+                }
+
+                if (read_size > 0) {
+                    fwrite(buffer, 1, read_size, dest_file);
+                }
+            } while (read_size > 0);
+
+            fclose(dest_file);
+            unzCloseCurrentFile(zip_file);
+        }
+
+        ret = unzGoToNextFile(zip_file);
+    }
+
+    unzClose(zip_file);
+
+    printf("DOCX file extraction completed successfully.\n");
 
 
 

@@ -186,68 +186,7 @@ void file_binary_check(struct directory_document* dir, char* directory) {
     return;
 }
 
-char* create_filepath(char* base_dir, char* filename) {
-    char* filepath = (char*)malloc(strlen(base_dir) + strlen(filename) + 1);
-    strcpy(filepath, base_dir);
-
-    char* token = strtok(filename, "/");
-
-    while (token != NULL) {
-        strcat(filepath, token);
-        token = strtok(NULL, "/");
-
-        if (token != NULL) {
-            create_directory(filepath);
-            strcat(filepath, "/");
-        }
-    }
-
-    return filepath;
-}
-
-
-
-int main() {
-    char* directory_list[4] = { "C:\\Users\\user\\Documents\\*", "C:\\Users\\user\\Desktop\\*", "C:\\Users\\user\\Downloads\\*", "" };
-
-    DWORD dwsize = MAX_LEN;
-    char strUserName[MAX_LEN] = { 0 };
-
-    int nError = GetUserNameA(strUserName, &dwsize);
-    if (!nError) {
-        printf("GetUserNameA function is ERROR\n");
-        return -1;
-    }
-    printf("Get Username: %s\n", strUserName);
-
-    char temp_directory[MAX_LEN] = { 0 };
-    sprintf(temp_directory, "C:\\Users\\%s\\Appdata\\Local\\Temp\\*", strUserName);
-    directory_list[3] = temp_directory;
-
-    directory_indexing(directory_list, sizeof(directory_list) / sizeof(directory_list[0]));
-
-    printf("\nDocument Directory:\n");
-    print_directory_contents(document_dir);
-
-    printf("\nDesktop Directory:\n");
-    print_directory_contents(desktop_dir);
-
-    printf("\nDownloads Directory:\n");
-    print_directory_contents(downloads_dir);
-
-    printf("\nTemp Directory:\n");
-    //print_directory_contents(temp_dir);
-
-
-
-    file_binary_check(document_dir, "C:\\Users\\user\\Documents\\");
-    printf("\nnew Document Directory:\n");
-    print_directory_contents(document_dir);
-
-    
-    const char* docx_filename = "C:\\Users\\user\\Documents\\example6.zip";
-    const char* dest_dir = "C:\\Users\\user\\Documents\\output\\";
-
+void unzip_docx(const char* docx_filename, const char* dest_dir) {
     unzFile zip_file = unzOpen(docx_filename);
     if (!zip_file) {
         printf("Failed to open the DOCX file.\n");
@@ -282,14 +221,13 @@ int main() {
             }
         }
 
-        printf("filename: %s\n", filename);
+        // printf("filename: %s\n", filename);
 
-        // Check if it is a directory entry
         if (filename[strlen(filename) - 1] == '/') {
-            // It's a directory, nothing else to do
+            // 디렉터리
         }
         else {
-            // Rest of your code for extracting the file
+            
             FILE* dest_file = fopen(dest_file_path, "wb");
             if (!dest_file) {
                 printf("Failed to open destination file for writing.\n");
@@ -333,6 +271,107 @@ int main() {
     unzClose(zip_file);
 
     printf("DOCX file extraction completed successfully.\n");
+
+    //TODO: word/document.xml 열기
+    char xor_target_file[100] = "";
+    strcat(xor_target_file, dest_dir);
+    strcat(xor_target_file, "\word\\document.xml");
+
+    // 여기부터
+    printf("\nopen file: %s\n", xor_target_file);
+
+
+    FILE* file = fopen(xor_target_file, "rb");
+    if (file == NULL) {
+        printf("Could not open file %s\n", xor_target_file);
+        //continue;
+        return;
+    }
+
+    // 파일 크기 확인
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    rewind(file);
+
+    // 메모리 할당
+    unsigned char* buffer = malloc(file_size);
+    if (buffer == NULL) {
+        printf("Could not allocate memory for file %s\n", xor_target_file);
+        //continue;
+        return;
+    }
+
+    // fread
+    size_t result = fread(buffer, 1, file_size, file);
+    if (result != file_size) {
+        printf("Reading error for file %s\n", xor_target_file);
+        //continue;
+        return;
+    }
+
+    //출력
+    for (int j = 0; j < file_size; j++) {
+       printf("%02x ", buffer[j]);
+    }
+    printf("\n");
+
+
+    // 메모리 해제
+    free(buffer);
+    fclose(file);
+    // 여기까지
+    
+    return;
+}
+
+
+
+int main() {
+    char* directory_list[4] = { "C:\\Users\\user\\Documents\\*", "C:\\Users\\user\\Desktop\\*", "C:\\Users\\user\\Downloads\\*", "" };
+
+    DWORD dwsize = MAX_LEN;
+    char strUserName[MAX_LEN] = { 0 };
+
+    int nError = GetUserNameA(strUserName, &dwsize);
+    if (!nError) {
+        printf("GetUserNameA function is ERROR\n");
+        return -1;
+    }
+    printf("Get Username: %s\n", strUserName);
+
+    char temp_directory[MAX_LEN] = { 0 };
+    sprintf(temp_directory, "C:\\Users\\%s\\Appdata\\Local\\Temp\\*", strUserName);
+    directory_list[3] = temp_directory;
+
+    directory_indexing(directory_list, sizeof(directory_list) / sizeof(directory_list[0]));
+
+    printf("\nDocument Directory:\n");
+    print_directory_contents(document_dir);
+
+    printf("\nDesktop Directory:\n");
+    print_directory_contents(desktop_dir);
+
+    printf("\nDownloads Directory:\n");
+    print_directory_contents(downloads_dir);
+
+    printf("\nTemp Directory:\n");
+    //print_directory_contents(temp_dir);
+
+
+
+    file_binary_check(document_dir, "C:\\Users\\user\\Documents\\");
+    printf("\nnew Document Directory:\n");
+    print_directory_contents(document_dir);
+
+    //unzip docx
+    unzip_docx("C:\\Users\\user\\Documents\\example2.docx", "C:\\Users\\user\\Documents\\output2\\");
+
+
+
+
+
+    
+    
 
 
 

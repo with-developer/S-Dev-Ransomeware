@@ -1,2 +1,8 @@
 ﻿  Ransomeware.c
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware\Ransomeware.c(193,18): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware\Ransomeware.c(207,22): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware\Ransomeware.c(235,26): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware\Ransomeware.c(243,26): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware\Ransomeware.c(255,30): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware\Ransomeware.c(278,29): warning C4129: 'w': 문자 이스케이프 시퀀스를 인식할 수 없습니다.
   Ransomeware.vcxproj -> C:\Users\user\Desktop\project\ransomeware\Ransomeware\x64\Debug\Ransomeware.exe

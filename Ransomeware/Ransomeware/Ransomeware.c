@@ -186,7 +186,24 @@ void file_binary_check(struct directory_document* dir, char* directory) {
     return;
 }
 
+char* create_filepath(char* base_dir, char* filename) {
+    char* filepath = (char*)malloc(strlen(base_dir) + strlen(filename) + 1);
+    strcpy(filepath, base_dir);
 
+    char* token = strtok(filename, "/");
+
+    while (token != NULL) {
+        strcat(filepath, token);
+        token = strtok(NULL, "/");
+
+        if (token != NULL) {
+            create_directory(filepath);
+            strcat(filepath, "/");
+        }
+    }
+
+    return filepath;
+}
 
 
 
@@ -228,7 +245,6 @@ int main() {
     print_directory_contents(document_dir);
 
     
-    //TODO: docx 파일 압축해제
     const char* docx_filename = "C:\\Users\\user\\Documents\\example6.zip";
     const char* dest_dir = "C:\\Users\\user\\Documents\\output\\";
 
@@ -252,36 +268,28 @@ int main() {
             return -1;
         }
 
-        char dest_file_path[256];
+        char* dest_file_path = (char*)malloc(strlen(dest_dir) + strlen(filename) + 1);
+        strcpy(dest_file_path, dest_dir);
+
+        char* token = strtok(filename, "/");
+        while (token != NULL) {
+            strcat(dest_file_path, token);
+            token = strtok(NULL, "/");
+
+            if (token != NULL) {
+                create_directory(dest_file_path);
+                strcat(dest_file_path, "/");
+            }
+        }
+
         printf("filename: %s\n", filename);
-        snprintf(dest_file_path, sizeof(dest_file_path), "%s%s", dest_dir, filename);
 
-
+        // Check if it is a directory entry
         if (filename[strlen(filename) - 1] == '/') {
-
-            create_directory(dest_file_path);
+            // It's a directory, nothing else to do
         }
         else {
-
-            char* slash_position = strchr(filename, '/');
-            if (slash_position != NULL) {
-                char* directory_start = filename;
-                char* directory_end;
-                while ((directory_end = strchr(directory_start, '/')) != NULL) {
-                    *directory_end = '\0';
-
-                    snprintf(dest_file_path, sizeof(dest_file_path), "%s%s", dest_dir, filename);
-                    create_directory(dest_file_path);
-
-
-                    *directory_end = '/';
-
-                    directory_start = directory_end + 1;
-                }
-
-                snprintf(dest_file_path, sizeof(dest_file_path), "%s%s", dest_file_path, slash_position + 1);
-            }
-
+            // Rest of your code for extracting the file
             FILE* dest_file = fopen(dest_file_path, "wb");
             if (!dest_file) {
                 printf("Failed to open destination file for writing.\n");
@@ -318,6 +326,7 @@ int main() {
             unzCloseCurrentFile(zip_file);
         }
 
+        free(dest_file_path);
         ret = unzGoToNextFile(zip_file);
     }
 

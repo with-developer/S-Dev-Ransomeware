@@ -273,12 +273,16 @@ void unzip_docx(const char* docx_filename, const char* dest_dir) {
     printf("DOCX file extraction completed successfully.\n");
 
     //TODO: word/document.xml 열기
-    char xor_target_file[100] = "";
+    unsigned char* text_open[1] = { (unsigned char*)"\x3C\x77\x3A\x74\x3E" };
+    unsigned char* text_close[1] = { (unsigned char*)"\x3C\x2F\x77\x3A\x70\x3E" };
+
+    //실제 시그니처값
+    char xor_target_file[200] = "";
     strcat(xor_target_file, dest_dir);
     strcat(xor_target_file, "\word\\document.xml");
 
     // 여기부터
-    printf("\nopen file: %s\n", xor_target_file);
+    printf("\nopen document.xml file: %s\n", xor_target_file);
 
 
     FILE* file = fopen(xor_target_file, "rb");
@@ -294,7 +298,10 @@ void unzip_docx(const char* docx_filename, const char* dest_dir) {
     rewind(file);
 
     // 메모리 할당
-    unsigned char* buffer = malloc(file_size);
+    unsigned char* buffer = calloc(1,file_size);
+    printf("%s\n", buffer);
+
+    unsigned char* new_buffer = malloc(file_size);
     if (buffer == NULL) {
         printf("Could not allocate memory for file %s\n", xor_target_file);
         //continue;
@@ -310,9 +317,15 @@ void unzip_docx(const char* docx_filename, const char* dest_dir) {
     }
 
     //출력
-    for (int j = 0; j < file_size; j++) {
-       printf("%02x ", buffer[j]);
-    }
+    //for (int j = 0; j < file_size; j++) {
+    printf("%s ", buffer);
+    printf("\n");
+    printf("buffer size: %d\n", sizeof(buffer));
+    printf("result size: %d\n", result);
+    printf("file_size: %d\n", file_size);
+       // text_open[0]이랑 같은지 체크.
+       // 같다면? text_open[1]이랑 같은지 체크
+    //}
     printf("\n");
 
 
@@ -320,6 +333,11 @@ void unzip_docx(const char* docx_filename, const char* dest_dir) {
     free(buffer);
     fclose(file);
     // 여기까지
+
+    //TODO: 3C 77 3A 74 3E(<w:t>), 3C 2F 77 3A 74(</w:t>) find chcek
+    // 3C 찾고, 같으면 다음 index에서 77찾고
+    // 다 똑같으면 그 다음 index부터 xor
+    // 중간에 달라지면 continue;
     
     return;
 }
@@ -366,12 +384,6 @@ int main() {
     //unzip docx
     unzip_docx("C:\\Users\\user\\Documents\\example2.docx", "C:\\Users\\user\\Documents\\output2\\");
 
-
-
-
-
-    
-    
 
 
 

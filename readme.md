@@ -1,4 +1,3 @@
 # S-Dev Ransomeware
 
-개발중
-
+docx file Encrypt Ransomeware (개발중)

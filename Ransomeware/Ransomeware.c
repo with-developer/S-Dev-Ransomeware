@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <windows.h>
 #include "minizip/unzip.h"
+#include "zip.h"
 
 #include <sys/stat.h>
 #include <direct.h>
@@ -186,6 +187,99 @@ void file_binary_check(struct directory_document* dir, char* directory) {
     return;
 }
 
+void xorEncrypt(char* input, char key) {
+    while (*input) {
+        *input = *input ^ key;
+        input++;
+    }
+}
+
+
+
+void xor_docx(const char* dest_dir) {
+    //TODO: word/document.xml 열기
+
+    //실제 시그니처값
+    char xor_target_file[200] = "";
+    strcat(xor_target_file, dest_dir);
+    strcat(xor_target_file, "\word\\document.xml");
+
+    // 여기부터
+    printf("\nopen document.xml file: %s\n", xor_target_file);
+
+
+    FILE* file = fopen(xor_target_file, "rb+");
+    if (file == NULL) {
+        printf("Could not open file %s\n", xor_target_file);
+        //continue;
+        return;
+    }
+
+    // 파일 크기 확인
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    rewind(file);
+
+    // 메모리 할당
+    unsigned char* buffer = calloc(1, file_size + 1);
+    buffer[file_size] = '\0';
+    printf("%s\n", buffer);
+
+    unsigned char* new_buffer = malloc(file_size);
+    if (buffer == NULL) {
+        printf("Could not allocate memory for file %s\n", xor_target_file);
+        //continue;
+        return;
+    }
+
+    // fread
+    size_t result = fread(buffer, 1, file_size, file);
+    if (result != file_size) {
+        printf("Reading error for file %s\n", xor_target_file);
+        //continue;
+        return;
+    }
+
+    //출력
+    //for (int j = 0; j < file_size; j++) {
+    printf("%s ", buffer);
+    // text_open[0]이랑 같은지 체크.
+    // 같다면? text_open[1]이랑 같은지 체크
+ //}
+    printf("\n");
+
+    char* startTag = "<w:t>";
+    char* endTag = "</w:t>";
+    char* start, * end;
+
+    start = strstr(buffer, startTag);
+    while (start) {
+        start += strlen(startTag); // <w:t> 태그 이후의 위치로 이동
+        end = strstr(start, endTag);
+        if (end) {
+            char tmp = *end; // 일시적으로 end 위치의 문자 저장
+            *end = '\0'; // 문자열을 일시적으로 종료시켜서 XOR 암호화에 사용
+            xorEncrypt(start, 0x01); // XOR 암호화 수행
+            *end = tmp; // 원래 문자 복구
+            start = strstr(end, startTag); // 다음 <w:t> 태그 위치 검색
+        }
+        else {
+            break;
+        }
+    }
+
+    printf("%s\n", buffer);
+    fclose(file);
+
+    FILE* file2 = fopen(xor_target_file, "w+");
+    fprintf(file2, "%s", buffer);
+
+
+    // 메모리 해제
+    free(buffer);
+}
+
+
 void unzip_docx(const char* docx_filename, const char* dest_dir) {
     unzFile zip_file = unzOpen(docx_filename);
     if (!zip_file) {
@@ -272,76 +366,15 @@ void unzip_docx(const char* docx_filename, const char* dest_dir) {
 
     printf("DOCX file extraction completed successfully.\n");
 
-    //TODO: word/document.xml 열기
-    unsigned char* text_open[1] = { (unsigned char*)"\x3C\x77\x3A\x74\x3E" };
-    unsigned char* text_close[1] = { (unsigned char*)"\x3C\x2F\x77\x3A\x70\x3E" };
-
-    //실제 시그니처값
-    char xor_target_file[200] = "";
-    strcat(xor_target_file, dest_dir);
-    strcat(xor_target_file, "\word\\document.xml");
-
-    // 여기부터
-    printf("\nopen document.xml file: %s\n", xor_target_file);
+    xor_docx(dest_dir);
+    
 
 
-    FILE* file = fopen(xor_target_file, "rb");
-    if (file == NULL) {
-        printf("Could not open file %s\n", xor_target_file);
-        //continue;
-        return;
-    }
-
-    // 파일 크기 확인
-    fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
-    rewind(file);
-
-    // 메모리 할당
-    unsigned char* buffer = calloc(1,file_size);
-    printf("%s\n", buffer);
-
-    unsigned char* new_buffer = malloc(file_size);
-    if (buffer == NULL) {
-        printf("Could not allocate memory for file %s\n", xor_target_file);
-        //continue;
-        return;
-    }
-
-    // fread
-    size_t result = fread(buffer, 1, file_size, file);
-    if (result != file_size) {
-        printf("Reading error for file %s\n", xor_target_file);
-        //continue;
-        return;
-    }
-
-    //출력
-    //for (int j = 0; j < file_size; j++) {
-    printf("%s ", buffer);
-    printf("\n");
-    printf("buffer size: %d\n", sizeof(buffer));
-    printf("result size: %d\n", result);
-    printf("file_size: %d\n", file_size);
-       // text_open[0]이랑 같은지 체크.
-       // 같다면? text_open[1]이랑 같은지 체크
-    //}
-    printf("\n");
-
-
-    // 메모리 해제
-    free(buffer);
-    fclose(file);
     // 여기까지
 
-    //TODO: 3C 77 3A 74 3E(<w:t>), 3C 2F 77 3A 74(</w:t>) find chcek
-    // 3C 찾고, 같으면 다음 index에서 77찾고
-    // 다 똑같으면 그 다음 index부터 xor
-    // 중간에 달라지면 continue;
     
     return;
 }
-
 
 
 int main() {
@@ -383,7 +416,7 @@ int main() {
 
     //unzip docx
     unzip_docx("C:\\Users\\user\\Documents\\example2.docx", "C:\\Users\\user\\Documents\\output2\\");
-
+    //TODO: DOCX 파일 다시 zip 하기.....
 
 
 

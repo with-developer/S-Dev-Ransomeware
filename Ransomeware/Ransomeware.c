@@ -194,7 +194,73 @@ void xorEncrypt(char* input, char key) {
     }
 }
 
+void compress_directory(zipFile zfile, const char* base_dir, const char* src_dir);
 
+void compress_files(const char* src_dir, const char* dest_zip)
+{
+    zipFile zfile = zipOpen(dest_zip, 0);
+    if (!zfile) {
+        printf("Failed to create the ZIP file.\n");
+        return;
+    }
+
+    compress_directory(zfile, src_dir, src_dir);
+
+    zipClose(zfile, NULL);
+    printf("ZIP file compression with subdirectories completed successfully.\n");
+}
+
+void compress_directory(zipFile zfile, const char* base_dir, const char* src_dir)
+{
+    char src_file_path[MAX_LEN];
+    WIN32_FIND_DATAA find_data;
+
+    strcpy(src_file_path, src_dir);
+    strcat(src_file_path, "\\*");
+
+    HANDLE hFind = FindFirstFileA(src_file_path, &find_data);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        printf("Failed to search files.\n");
+        return;
+    }
+
+    do {
+        if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            if (strcmp(find_data.cFileName, ".") != 0 && strcmp(find_data.cFileName, "..") != 0) {
+                char child_dir[MAX_LEN];
+
+                strcpy(child_dir, src_dir);
+                strcat(child_dir, "\\");
+                strcat(child_dir, find_data.cFileName);
+                compress_directory(zfile, base_dir, child_dir);
+            }
+        }
+        else {
+            char file_name[MAX_LEN];
+            strcpy(file_name, src_dir + strlen(base_dir));
+            strcat(file_name, "\\");
+            strcat(file_name, find_data.cFileName);
+
+            strncpy(src_file_path, src_dir, MAX_LEN - 1);
+            strcat(src_file_path, "\\");
+            strcat(src_file_path, find_data.cFileName);
+
+            FILE* fp = fopen(src_file_path, "rb");
+            if (fp) {
+                zipOpenNewFileInZip(zfile, file_name, NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+                unsigned char buffer[4096];
+                size_t read_size;
+                while ((read_size = fread(buffer, 1, sizeof(buffer), fp)) > 0) {
+                    zipWriteInFileInZip(zfile, buffer, read_size);
+                }
+                zipCloseFileInZip(zfile);
+                fclose(fp);
+            }
+        }
+    } while (FindNextFileA(hFind, &find_data));
+
+    FindClose(hFind);
+}
 
 void xor_docx(const char* dest_dir) {
     //TODO: word/document.xml 열기
@@ -277,6 +343,8 @@ void xor_docx(const char* dest_dir) {
 
     // 메모리 해제
     free(buffer);
+    compress_files(dest_dir, "C:\\Users\\user\\Documents\\compressed_files.docx");
+   
 }
 
 

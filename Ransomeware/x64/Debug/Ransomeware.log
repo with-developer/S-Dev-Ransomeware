@@ -1,10 +1,9 @@
 ﻿  Ransomeware.c
-C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(204,29): warning C4129: 'w': 문자 이스케이프 시퀀스를 인식할 수 없습니다.
-C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(286,18): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
-C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(300,22): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
-C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(328,26): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
-C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(336,26): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
-C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(348,30): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
-C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(388,34): warning C4133: '함수': 'char [260]'과(와) 'LPCWSTR' 사이의 형식이 호환되지 않습니다.
-C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(395,21): warning C4133: '초기화 중': 'WCHAR *'과(와) 'const char *' 사이의 형식이 호환되지 않습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(254,56): warning C4267: '함수': 'size_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(271,29): warning C4129: 'w': 문자 이스케이프 시퀀스를 인식할 수 없습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(355,18): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(369,22): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(397,26): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(405,26): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
+C:\Users\user\Desktop\project\ransomeware\Ransomeware\Ransomeware.c(417,30): warning C4098: 'unzip_docx': 'void' 함수에서 값을 반환하고 있습니다.
   Ransomeware.vcxproj -> C:\Users\user\Desktop\project\ransomeware\x64\Debug\Ransomeware.exe

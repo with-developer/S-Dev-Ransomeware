@@ -238,7 +238,7 @@ void compress_directory(zipFile zfile, const char* base_dir, const char* src_dir
         else {
             char file_name[MAX_LEN];
             strcpy(file_name, src_dir + strlen(base_dir));
-            strcat(file_name, "\\");
+            strcat(file_name, "/");
             strcat(file_name, find_data.cFileName);
 
             strncpy(src_file_path, src_dir, MAX_LEN - 1);
@@ -247,7 +247,7 @@ void compress_directory(zipFile zfile, const char* base_dir, const char* src_dir
 
             FILE* fp = fopen(src_file_path, "rb");
             if (fp) {
-                zipOpenNewFileInZip(zfile, file_name, NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+                zipOpenNewFileInZip(zfile, file_name, NULL, NULL, 0, NULL, 0, NULL, 0, 0);
                 unsigned char buffer[4096];
                 size_t read_size;
                 while ((read_size = fread(buffer, 1, sizeof(buffer), fp)) > 0) {
